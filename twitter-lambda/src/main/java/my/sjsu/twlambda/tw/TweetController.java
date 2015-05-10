@@ -1,6 +1,7 @@
 package my.sjsu.twlambda.tw;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,6 +25,13 @@ import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
+
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 
 @RestController
 public class TweetController {
@@ -69,8 +77,9 @@ public class TweetController {
 	public void searchTweets(@PathVariable("ht1") String ht1,
 			@PathVariable("ht2") String ht2, @PathVariable("from") String from,
 			@PathVariable("to") String to) throws Exception {
-		String fn = "/tmp/" + ht1 + ht2 + from + to + ".json";
-		fw = new BufferedWriter(new FileWriter(fn));
+		String fn = ht1 + ht2 + from + to + ".json";
+		String fullFilenName = "/tmp/" + fn;
+		fw = new BufferedWriter(new FileWriter(fullFilenName));
 		Twitter twitter = new TwitterFactory().getInstance();
 		rawTweets.put(ht1, new ArrayList<RawTweets>());
 		rawTweets.put(ht2, new ArrayList<RawTweets>());
@@ -129,6 +138,28 @@ public class TweetController {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(fw, rawTweets);
 		fw.close();
+		putToS3(fn, fullFilenName);
+	}
+
+	public void putToS3(String fileName, String fullFileName) {
+		// credentials object identifying user for authentication
+		// user must have AWSConnector and AmazonS3FullAccess for
+		// this example to work
+		AWSCredentials credentials = new BasicAWSCredentials(
+				"AKIAIKSD4ZJN76SB7RJA",
+				"vxbOuiGPRUaXuVWJEof836oVnrGdG3i7+IlcHg0c");
+
+		// create a client connection based on credentials
+		AmazonS3 s3client = new AmazonS3Client(credentials);
+		// create bucket - name must be unique for all S3 users
+		String bucketName = "twitter-lambda";
+
+		// upload file to folder and set it to public
+
+		s3client.putObject(new PutObjectRequest(bucketName, fileName, new File(
+				fullFileName))
+				.withCannedAcl(CannedAccessControlList.PublicRead));
+
 	}
 
 }
