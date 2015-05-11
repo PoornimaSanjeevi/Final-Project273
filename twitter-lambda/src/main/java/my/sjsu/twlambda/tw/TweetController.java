@@ -81,8 +81,8 @@ public class TweetController {
 		String fullFilenName = "/tmp/" + fn;
 		fw = new BufferedWriter(new FileWriter(fullFilenName));
 		Twitter twitter = new TwitterFactory().getInstance();
-		rawTweets.put(ht1, new ArrayList<RawTweets>());
-		rawTweets.put(ht2, new ArrayList<RawTweets>());
+		rawTweets.put("ht1", new ArrayList<RawTweets>());
+		rawTweets.put("ht2", new ArrayList<RawTweets>());
 
 		try {
 			Query query = new Query("#" + ht1 + " OR  #" + ht2);
@@ -118,15 +118,18 @@ public class TweetController {
 						lat = tweet.getGeoLocation().getLatitude();
 						lon = tweet.getGeoLocation().getLongitude();
 					}
-					RawTweets rt = new RawTweets(
-							df.format(tweet.getCreatedAt()),
-							u.getFollowersCount(), lat, lon, u.getLocation(),
-							hashlist);
+
 					if (hasHt1) {
-						rawTweets.get(ht1).add(rt);
+						RawTweets rt = new RawTweets(ht1, df.format(tweet
+								.getCreatedAt()), u.getFollowersCount(), lat,
+								lon, u.getLocation(), hashlist);
+						rawTweets.get("ht1").add(rt);
 					}
 					if (hasHt2) {
-						rawTweets.get(ht2).add(rt);
+						RawTweets rt = new RawTweets(ht2, df.format(tweet
+								.getCreatedAt()), u.getFollowersCount(), lat,
+								lon, u.getLocation(), hashlist);
+						rawTweets.get("ht2").add(rt);
 					}
 				}
 			} while ((query = result.nextQuery()) != null);
@@ -146,8 +149,8 @@ public class TweetController {
 		// user must have AWSConnector and AmazonS3FullAccess for
 		// this example to work
 		AWSCredentials credentials = new BasicAWSCredentials(
-				"AKIAIKSD4ZJN76SB7RJA",
-				"vxbOuiGPRUaXuVWJEof836oVnrGdG3i7+IlcHg0c");
+				"AKIAIY5V3FDB2GNOGPSQ",
+				"L3eG6wS0QWRUsktTsSOt8vbSG6J+2Y/r+CwjX+RE");
 
 		// create a client connection based on credentials
 		AmazonS3 s3client = new AmazonS3Client(credentials);

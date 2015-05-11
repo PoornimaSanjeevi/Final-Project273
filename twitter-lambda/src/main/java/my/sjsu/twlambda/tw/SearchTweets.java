@@ -37,8 +37,8 @@ public class SearchTweets {
 		Twitter twitter = new TwitterFactory().getInstance();
 		String ht1 = "sjsu";
 		String ht2 = "sjpd";
-		rawTweets.put(ht1, new ArrayList<RawTweets>());
-		rawTweets.put(ht2, new ArrayList<RawTweets>());
+		rawTweets.put("ht1", new ArrayList<RawTweets>());
+		rawTweets.put("ht2", new ArrayList<RawTweets>());
 
 		try {
 			Query query = new Query("#" + ht1 + " OR  #" + ht2);
@@ -73,13 +73,17 @@ public class SearchTweets {
 						lat = tweet.getGeoLocation().getLatitude();
 						lon = tweet.getGeoLocation().getLongitude();
 					}
-					RawTweets rt = new RawTweets(
-							df.format(tweet.getCreatedAt()),
-							u.getFollowersCount(), lat, lon,u.getLocation(), hashlist);
+
 					if (hasHt1) {
+						RawTweets rt = new RawTweets("ht1", df.format(tweet
+								.getCreatedAt()), u.getFollowersCount(), lat,
+								lon, u.getLocation(), hashlist);
 						rawTweets.get(ht1).add(rt);
 					}
 					if (hasHt2) {
+						RawTweets rt = new RawTweets("ht2", df.format(tweet
+								.getCreatedAt()), u.getFollowersCount(), lat,
+								lon, u.getLocation(), hashlist);
 						rawTweets.get(ht2).add(rt);
 					}
 				}

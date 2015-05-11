@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RawTweets {
-	
+	public String hashTag;
 	public String time;
 	public int followerCount;
 	double latitude;
@@ -20,9 +20,10 @@ public class RawTweets {
 
 	List<String> hashes = new ArrayList<String>();
 
-	public RawTweets(String time, int followerCount, double latitude,
+	public RawTweets(String hashTag, String time, int followerCount, double latitude,
 			double longitude, String loc, String[] hashlist) {
 		super();
+		this.hashTag = hashTag;
 		this.time = time;
 		this.followerCount = followerCount;
 		this.latitude = latitude;
