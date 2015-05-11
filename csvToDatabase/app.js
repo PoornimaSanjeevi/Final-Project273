@@ -40,7 +40,8 @@ app.get('/', function(req,res)
     });
     res.render('index', { title: 'Express' });
     
-    
+    //name of the username for the database is root 
+    //name of the password for the database is root 
     	//database name:csvimporter
     	//collection name :myCSVs
     //"mongodb://<root>:<root>@ds061288.mongolab.com:61288/csvimporter"
