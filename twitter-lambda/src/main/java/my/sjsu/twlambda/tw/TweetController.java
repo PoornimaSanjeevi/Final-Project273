@@ -149,8 +149,8 @@ public class TweetController {
 		// user must have AWSConnector and AmazonS3FullAccess for
 		// this example to work
 		AWSCredentials credentials = new BasicAWSCredentials(
-				"AKIAIY5V3FDB2GNOGPSQ",
-				"L3eG6wS0QWRUsktTsSOt8vbSG6J+2Y/r+CwjX+RE");
+				"key",
+				"secret");
 
 		// create a client connection based on credentials
 		AmazonS3 s3client = new AmazonS3Client(credentials);
