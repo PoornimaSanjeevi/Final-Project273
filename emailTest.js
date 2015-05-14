@@ -111,10 +111,14 @@ exports.handler = function(event, context){
           console.log("Trying to send mail");
           console.log("Count for tag1: "+count1);
           console.log("Count for tag2: "+count2);
+          var timeHrs1= startTime.split("-");
+          var hrs1=timeHrs1[3];
+          var timeHrs2=endTime.split("-");
+          var hrs2=timeHrs2[3];
           smtpTransport.sendMail({
                from: "Tweet Totaller ✔ <cmpe273team@gmail.com>", // sender address
                to: emailId, // comma separated list of receivers
-               subject: "Requested Tweet Results for hashtags - "+hashTag1+" and "+hashTag2, // Subject line
+               subject: "Requested Tweet Results for hashtags - "+hashTag1+" and "+hashTag2+" - "+hrs1+" to "+hrs2+" hours", // Subject line
                text: "Here are the results for the 2 hashtags that you searched. The number of tweets for "+hashTag1+" is "+count1+". The number of tweets for " +hashTag2+" is "+count2+". "// plaintext body 
                   }, function(error, response){
                if(error){
