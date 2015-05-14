@@ -3,6 +3,7 @@ var aws = require('aws-sdk');
 var s3 = new aws.S3({apiVersion: '2006-03-01'});
 var nodemailer = require("nodemailer");
 var MongoClient = require('mongodb').MongoClient;
+var async = require("async");
 
 var smtpTransport = nodemailer.createTransport("SMTP",{
    service: "Gmail",
@@ -13,8 +14,21 @@ var smtpTransport = nodemailer.createTransport("SMTP",{
 });
 
 exports.handler = function(event, context){
+  //get bucket and key details
     var bucket = event.Records[0].s3.bucket.name;
     var key = event.Records[0].s3.object.key;
+    //variables to be defined before async starts
+    var hashTag1="";
+          var hashTag2="";
+          var startTime="";
+          var endTime="";
+          var emailId="";
+          var count1=0;
+          var count2=0;
+
+    async.waterfall([
+      //get data from s3
+        function(callback){
     console.log('Getting content from S3...');
     s3.getObject({Bucket: bucket, Key: key}, function(err, data) {
         if (err) {
@@ -24,14 +38,6 @@ exports.handler = function(event, context){
         } else {
           textData = data.Body.toString('utf8');
           var content= textData.split(",");
-          var hashTag1="";
-          var hashTag2="";
-          var startTime="";
-          var endTime="";
-          var emailId="";
-          var count1=0;
-          var count2=0;
-
           //console.log(content.length);
           hashTag1=content[0];
           hashTag2=content[1];
@@ -39,86 +45,69 @@ exports.handler = function(event, context){
           endTime=content[3];
           emailId=content[4];
           console.log(emailId);
-          MongoClient.connect("mongodb://cmpe273:cmpe273@ds061741.mongolab.com:61741/cmpeproject273", function(err, db) {
+          callback(null);
+        }
+      });
+  },
+    function (callback){
+      console.log('Connecting to mongodb...');
+      MongoClient.connect("mongodb://cmpe273:cmpe273@ds061741.mongolab.com:61741/cmpeproject273", 
+        function(err, db) {
   if(err) { console.log('Unable to connect to the mongoDB server. Error:', err); 
     return console.dir(err); }
     db.collection('tweets1',function(err, collection){
       if(!err){
         console.log(startTime);
         collection.findOne({'date': startTime}, function(err, item) {
-              if(!err){
-                var count1=item.count;
-                console.log("Count:"+count1);
+              if(item!=null){
+                count1=item.count;
+                console.log("Count1:"+count1);
                 console.log(item);
+                db.close();
+                callback(null);
+
               }
               else
-                {console.log("No doc for the start time in tweets1");}
-            });
-        /*collection.find({'date': startTime}).toArray(function(err,docs){
-          if(!err){
-            db.close();
-            var intCount=docs.lenght;
-            console.log("docs length: "+intCount);
-            if(intCount>0){
-              var strJson="";
-              console.log("Till now working");
-            }else {
-              //onErr(err,callback);
-              console.log("error in finding doc with start date");
-            }
+                {console.log("No doc for the start time in tweets1");
+              db.close();
+            callback(null);
           }
-        });*///end collection.find
+            });
       } else{console.log("No tweets1 found"); db.close(); console.fail("No proper comparison available");}
     }); //end db.collection
+        });
+    },
+    function (callback){
+      console.log('Connecting to mongodb...');
+      MongoClient.connect("mongodb://cmpe273:cmpe273@ds061741.mongolab.com:61741/cmpeproject273", 
+        function(err, db) {
+  if(err) { console.log('Unable to connect to the mongoDB server. Error:', err); 
+    return console.dir(err); }
     db.collection('tweets2',function(err, collection){
       if(!err){
         console.log(startTime);
         collection.findOne({'date': startTime}, function(err, item) {
-              if(!err){
+              if(item!=null){
                 count2=item.count;
-                console.log("Count:"+count2);
+                console.log("Count2:"+count2);
                 console.log(item);
+                db.close();
+                callback(null);
               }
               else
-                {console.log("No doc for the start time in tweets2");db.close();}
-            });
-      } else{console.log("No tweets2 found"); db.close();console.fail("No proper comparison available");}
-    }); //end db.collection
-
-  /*var collection1 = db.collection('tweets1');
-  var collection2 = db.collection('tweets2');
-  console.log("Db connected");
-  collection1.find().toArray(function(err, docs) {
-    console.log(docs);
-});
-  var dc1= collection1.find({date: startTime}).count();
-  var dc2=collection2.find({date: startTime}).count();
-
-  console.log(dc1);
-  console.log(dc2);
-            if (dc1>1)
-            {
-            var doc1 = collection1.findOne({date: startTime}, function(err, document) {
-            console.log("Got for hashTag1");
-              });
-            count1=doc1.count;
-            console.log(count1);
+                {console.log("No doc for the start time in tweets2");
+                db.close();
+                callback(null);
             }
-          if(dc2>1)
-            {
-            var doc2 = collection2.findOne({date: startTime}, function(err, document) {
-            console.log("Got for hashTag2");
-              });
-            count2=doc2.count;
-            console.log(count2);
-            }*/
-            //close db
-            //db.close();
-            
-
+            });
+      } else{console.log("No tweets2 found"); 
+      db.close();
+      console.fail("No proper comparison available");}
+    }); //end db.collection
         });
-          //end mongodb
-          //begin mail
+    },
+    function(callback){
+      //begin mail
           console.log("Trying to send mail");
           console.log("Count for tag1: "+count1);
           console.log("Count for tag2: "+count2);
@@ -130,22 +119,22 @@ exports.handler = function(event, context){
                   }, function(error, response){
                if(error){
                    console.log(error);
-                   context.fail ("Error sending email: " + err)
+                   //context.fail ("Error sending email: " + err)
                }else{
                    console.log("Message sent: " + response.message);
-                   context.succeed();
+                   callback();
+                   //context.succeed();
                }
-               
+
             });
         //end mail
-
-
-          
-            }
-            //end else
-
-        });
-        //end S3
+        callback();
+    }
+ ], function(err,result){
+    
+    //if (err) context.done(err, "Drat!!");
+    //if (!err) context.done(null, "Count successfully sent.");
+  });
   };
 
 
