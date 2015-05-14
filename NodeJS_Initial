@@ -1,0 +1,57 @@
+var nodemailer = require("nodemailer");
+var MongoClient = require('mongodb').MongoClient;
+
+var smtpTransport = nodemailer.createTransport("SMTP",{
+   service: "Gmail",
+   auth: {
+       user: "cmpe273team@gmail.com",
+       pass: "CMPE273123"
+   }
+});
+
+exports.handler = function(event, context){
+MongoClient.connect("mongodb://spurthysambidi:spurthy20@ds041167.mongolab.com:41167/azuredb", function(err, db) {
+  if(err) { return console.dir(err); }
+
+  var collection = db.collection('readTweets');
+   var doc1 = {'AmazonJob':1,'internetbestfriendday':3,'Deals_US':1,'Bizitalk':1};
+  var doc2 = {'tweet2':'obama'};
+  var lotsOfDocs = [{'tweet3':'taylor'}, {'tweet4':'doc4'}];
+
+  collection.insert(doc1);
+
+  collection.insert(doc2, {w:1}, function(err, result) {});
+
+  collection.insert(lotsOfDocs, {w:1}, function(err, result) {});
+  
+  console.log("inserted");
+  
+  smtpTransport.sendMail({
+   from: "TEAM cmpe273team@gmail.com", // sender address
+   to: "spurthyreddy20@gmail.com", // comma separated list of receivers
+   subject: "Tweets results", // Subject line
+   text:"{'AmazonJob':1,'internetbestfriendday':3,'Deals_US':1,'Bizitalk':1}",
+}, function(error, response){
+   if(error){
+       console.log(error);
+   }else{
+       console.log("Message sent: " + response.message);
+   }
+});
+
+});
+
+}
+
+smtpTransport.sendMail({
+   from: "TEAM cmpe273team@gmail.com", // sender address
+   to: "spurthyreddy20@gmail.com", // comma separated list of receivers
+   subject: "Tweets results", // Subject line
+   text: "results of tweets" // plaintext body
+}, function(error, response){
+   if(error){
+       console.log(error);
+   }else{
+       console.log("Message sent: " + response.message);
+   }
+});
